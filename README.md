@@ -32,7 +32,7 @@ go get github.com/aws/aws-lambda-go/lambda
 3. Deploy!
 
 ```
-serverless deploy
+./scripts/deploy.sh
 ```
 
 4. Test:
@@ -44,4 +44,4 @@ serverless deploy
 
 ## TODOs
 
-- [ ] Use https://github.com/Masterminds/glide to manage packages
+- [ ] Use https://github.com/golang/dep to manage packages
