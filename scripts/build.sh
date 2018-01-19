@@ -11,6 +11,7 @@ for f in *.go; do
     echo "✓ Compiled $filename"
   else
     echo "✕ Failed to compile $filename!"
+    exit 1
   fi
 done
 
