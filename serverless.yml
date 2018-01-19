@@ -1,0 +1,97 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: serverless-crud-go
+
+custom:
+  todosTableName: ${self:service}-${self:provider.stage}-todos
+  todosTableArn: # ARNs are addresses of deployed services in AWS space
+    Fn::Join:
+    - ":"
+    - - arn
+      - aws
+      - dynamodb
+      - Ref: AWS::Region
+      - Ref: AWS::AccountId
+      - table/${self:custom.todosTableName}
+
+provider:
+  name: aws
+  runtime: go1.x
+  stage: dev
+  region: ap-southeast-1
+  environment:
+    TODOS_TABLE_NAME: ${self:custom.todosTableName}
+  iamRoleStatements: # Defines what other AWS services our lambda functions can access
+    - Effect: Allow # Allow access to DynamoDB tables
+      Action:
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource:
+        - ${self:custom.todosTableArn}
+
+package:
+ individually: true
+ exclude:
+   - ./**
+
+functions:
+  listTodos:
+    handler: bin/handlers/listTodos
+    package:
+     include:
+       - ./bin/handlers/listTodos
+    events:
+      - http:
+          path: todos
+          method: get
+          cors: true
+  addTodo:
+    handler: bin/handlers/addTodo
+    package:
+      include:
+        - ./bin/handlers/addTodo
+    events:
+      - http:
+          path: todos
+          method: post
+          cors: true
+  completeTodo:
+    handler: bin/handlers/completeTodo
+    package:
+      include:
+        - ./bin/handlers/completeTodo
+    events:
+      - http:
+          path: todos/{id}
+          method: patch
+          cors: true
+
+resources:
+  Resources: # Supporting AWS services
+    TodosTable: # Define a new DynamoDB Table resource to store todo items
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.todosTableName}
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
