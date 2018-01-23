@@ -27,14 +27,13 @@ type Todo struct {
 var ddb *dynamodb.DynamoDB
 func init() {
 	region := os.Getenv("AWS_REGION")
-	session, err := session.NewSession(&aws.Config{ // Use aws sdk to connect to dynamoDB
-		Region: &region},
-	)
-	if err != nil {
+	if session, err := session.NewSession(&aws.Config{ // Use aws sdk to connect to dynamoDB
+		Region: &region,
+	}); err != nil {
 		fmt.Println(fmt.Sprintf("Failed to connect to AWS: %s", err.Error()))
+	} else {
+		ddb = dynamodb.New(session) // Create DynamoDB client
 	}
-
-	ddb = dynamodb.New(session) // Create DynamoDB client
 }
 
 func AddTodo(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -46,27 +45,24 @@ func AddTodo(ctx context.Context, request events.APIGatewayProxyRequest) (events
 	}
 
 	// Parse request body
-	if err := json.Unmarshal([]byte(request.Body), todo); err != nil { panic(err) }
+	json.Unmarshal([]byte(request.Body), todo)
 
 	// Write to dynamoDB
-	av, err := dynamodbattribute.MarshalMap(todo)
-	if err != nil {
-		fmt.Println(err)
-		panic(err)
-	}
-	if _, err = ddb.PutItem(&dynamodb.PutItemInput{
-		Item: av,
-		TableName: aws.String(os.Getenv("TODOS_TABLE_NAME")),
+	item, _ := dynamodbattribute.MarshalMap(todo)
+	tableName := aws.String(os.Getenv("TODOS_TABLE_NAME"))
+	if _, err := ddb.PutItem(&dynamodb.PutItemInput{
+		Item: item,
+		TableName: tableName,
 	}); err != nil {
+		return events.APIGatewayProxyResponse{ // Error HTTP response
+			Body: err.Error(),
+			StatusCode: 500,
+		}, nil
+	} else {
 		todoJson, _ := json.Marshal(todo)
 		return events.APIGatewayProxyResponse{ // Success HTTP response
 			Body: string(todoJson),
 			StatusCode: 200,
-		}, nil
-	} else {
-		return events.APIGatewayProxyResponse{ // Error HTTP response
-			Body: err.Error(),
-			StatusCode: 500,
 		}, nil
 	}
 }
