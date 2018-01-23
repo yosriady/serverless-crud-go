@@ -47,21 +47,22 @@ func AddTodo(ctx context.Context, request events.APIGatewayProxyRequest) (events
 	// Parse request body
 	json.Unmarshal([]byte(request.Body), todo)
 
-	// Write to dynamoDB
+	// Write to DynamoDB
 	item, _ := dynamodbattribute.MarshalMap(todo)
 	tableName := aws.String(os.Getenv("TODOS_TABLE_NAME"))
-	if _, err := ddb.PutItem(&dynamodb.PutItemInput{
+	params := &dynamodb.PutItemInput{
 		Item: item,
 		TableName: tableName,
-	}); err != nil {
+	}
+	if _, err := ddb.PutItem(params); err != nil {
 		return events.APIGatewayProxyResponse{ // Error HTTP response
 			Body: err.Error(),
 			StatusCode: 500,
 		}, nil
 	} else {
-		todoJson, _ := json.Marshal(todo)
+		body, _ := json.Marshal(todo)
 		return events.APIGatewayProxyResponse{ // Success HTTP response
-			Body: string(todoJson),
+			Body: string(body),
 			StatusCode: 200,
 		}, nil
 	}
