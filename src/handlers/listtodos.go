@@ -38,12 +38,17 @@ func init() {
 }
 
 func ListTodos(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	fmt.Println("ListTodos")
+
+	var (
+		tableName = aws.String(os.Getenv("TODOS_TABLE_NAME"))
+	)
+
 	// Read from DynamoDB
-	tableName := aws.String(os.Getenv("TODOS_TABLE_NAME"))
-	params := &dynamodb.ScanInput{
+	input := &dynamodb.ScanInput{
 		TableName: tableName,
 	}
-	result, _ := ddb.Scan(params)
+	result, _ := ddb.Scan(input)
 
 	// Construct todos from response
 	var todos []Todo

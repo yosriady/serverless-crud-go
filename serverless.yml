@@ -79,6 +79,16 @@ functions:
           path: todos/{id}
           method: patch
           cors: true
+  deleteTodo:
+      handler: bin/handlers/deleteTodo
+      package:
+        include:
+          - ./bin/handlers/deleteTodo
+      events:
+        - http:
+            path: todos/{id}
+            method: delete
+            cors: true
 
 resources:
   Resources: # Supporting AWS services

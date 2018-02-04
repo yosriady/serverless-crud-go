@@ -1,4 +1,5 @@
 bin
+vendor
 
 # Serverless directories
 .serverless

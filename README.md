@@ -7,6 +7,7 @@ This is an example Todo CRUD application written in Go.
 - [Node.js & NPM](https://github.com/creationix/nvm)
 - [Serverless framework](https://serverless.com/framework/docs/providers/aws/guide/installation/): `npm install -g serverless`
 - [Go](https://golang.org/dl/)
+- [dep](https://github.com/golang/dep): `brew install dep && brew upgrade dep`
 
 ## Quick Start
 
@@ -20,7 +21,7 @@ cd serverless-crud-go
 1. Install Go dependencies
 
 ```
-go get github.com/aws/aws-lambda-go/lambda
+dep ensure
 ```
 
 2. Compile functions as individual binaries for deployment package:
@@ -29,11 +30,15 @@ go get github.com/aws/aws-lambda-go/lambda
 ./scripts/build.sh
 ```
 
+> You need to perform this compilation step before deploying.
+
 3. Deploy!
 
 ```
-./scripts/deploy.sh
+serverless deploy
 ```
+
+> You can perform steps 2 and 3 simultaneously by running `./scripts/deploy.sh`.
 
 4. Test:
 
@@ -58,7 +63,3 @@ go get github.com/aws/aws-lambda-go/lambda
     ]
 }
 ```
-
-## TODOs
-
-- [ ] Use https://github.com/golang/dep to manage packages

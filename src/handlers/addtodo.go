@@ -37,9 +37,16 @@ func init() {
 }
 
 func AddTodo(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	fmt.Println("AddTodo")
+
+	var (
+		id = uuid.Must(uuid.NewV4(), nil).String()
+		tableName = aws.String(os.Getenv("TODOS_TABLE_NAME"))
+	)
+
 	// Initialize todo
 	todo := &Todo{
-		ID:					uuid.Must(uuid.NewV4()).String(),
+		ID:					id,
 		Done:				false,
 		CreatedAt:			time.Now().String(),
 	}
@@ -49,12 +56,11 @@ func AddTodo(ctx context.Context, request events.APIGatewayProxyRequest) (events
 
 	// Write to DynamoDB
 	item, _ := dynamodbattribute.MarshalMap(todo)
-	tableName := aws.String(os.Getenv("TODOS_TABLE_NAME"))
-	params := &dynamodb.PutItemInput{
+	input := &dynamodb.PutItemInput{
 		Item: item,
 		TableName: tableName,
 	}
-	if _, err := ddb.PutItem(params); err != nil {
+	if _, err := ddb.PutItem(input); err != nil {
 		return events.APIGatewayProxyResponse{ // Error HTTP response
 			Body: err.Error(),
 			StatusCode: 500,
