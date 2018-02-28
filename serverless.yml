@@ -49,6 +49,16 @@ package:
    - ./**
 
 functions:
+  hello:
+    handler: bin/handlers/hello
+    package:
+     include:
+       - ./bin/handlers/hello
+    events:
+      - http:
+          path: hello
+          method: get
+          cors: true
   listTodos:
     handler: bin/handlers/listTodos
     package:
